@@ -18,7 +18,7 @@ class MaskGenerator:
         label = np.zeros((image_shape[1], image_shape[0]), dtype=np.float32)
 
         for key in keypoints:
-            label[int(key[1]), int(key[0])] = 100
+            label[int(key[1]), int(key[0])] = 400
 
         label = gaussian_filter(label, sigma=(sigma, sigma), order=0)
 

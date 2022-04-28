@@ -9,7 +9,7 @@ experiment: null
 work_dir: ${hydra:runtime.cwd}
 
 # path to folder with data
-data_dir: ${work_dir}/data/CountingSimDataset
+data_dir: ${work_dir}/data/DroneCrowd
 
 #### MODE ####
 debug_mode: False # disable loggers
@@ -18,10 +18,10 @@ eval_mode: False # skip train, require train.resume_from_checkpoint
 #### TRAINER ####
 trainer:
   _target_: pytorch_lightning.Trainer
-  gpus: 1
+  gpus: 2
   accelerator: 'ddp'
-  precision: 32
-  max_epochs: 5
+  precision: 16
+  max_epochs: 100
   resume_from_checkpoint: null
   progress_bar_refresh_rate: 1
   weights_summary: null
@@ -29,8 +29,8 @@ trainer:
 #### MODEL ####
 model:
   _target_: src.models.density_estimator.DensityEstimator
-  model_name: UNet
-  encoder_name: resnet18
+  model_name: DeepLabV3Plus
+  encoder_name: tu-semnasnet_075
   input_channels: 3
   classes: ['density']
   loss_function: MSE
@@ -42,17 +42,16 @@ model:
 datamodule:
   _target_: src.datamodules.density_data_module.DensityDataModule
   data_path: ${data_dir}
-  dataset: src.datamodules.datasets.countingsim_dataset.CountingSimDataset
-  number_of_workers: 2
-  batch_size: 4
-  image_size: [ 480, 480 ]
+  dataset: src.datamodules.datasets.dronecrowd_dataset.DronecrowdDataset
+  number_of_workers: 6
+  batch_size: 16
+  image_size: [ 960, 544 ]
   image_mean: [ 0.0, 0.0, 0.0 ]
   image_std: [ 1.0, 1.0, 1.0 ]
   mask_gaussian_sigma: 1
   augment: True
-  number_of_splits: 5
-  current_split: 0
-
+  number_of_splits:
+  current_split:
 
 #### CALLBACKS ####
 callbacks:

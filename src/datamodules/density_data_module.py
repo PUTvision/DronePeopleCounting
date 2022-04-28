@@ -1,4 +1,6 @@
 import itertools
+import os.path
+import re
 from collections import deque
 from pathlib import Path
 from random import Random
@@ -6,8 +8,8 @@ from typing import Optional, List, Tuple
 
 import albumentations as A
 import cv2
-from albumentations.pytorch import ToTensorV2
 import hydra
+from albumentations.pytorch import ToTensorV2
 from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader, Dataset
 
@@ -65,18 +67,6 @@ class DensityDataModule(LightningDataModule):
             ToTensorV2()
         ], keypoint_params=A.KeypointParams(format='xy', remove_invisible=True))
 
-    def prepare_splits(self) -> List[List[str]]:
-        sequences_names = sorted([sequence_path.name for sequence_path in self._data_root.glob('*')
-                                  if not sequence_path.name.startswith('.')])
-
-        if 'train' in sequences_names or 'test' in sequences_names or 'valid' in sequences_names:
-            sequences_names = sorted([cat.name + '/' + sequence_path.name for cat in self._data_root.glob('*')
-                                      for sequence_path in cat.glob('*')
-                                      if not sequence_path.name.startswith('.')])
-
-        splits = self.partition_sequences(sequences_names, self._number_of_splits)
-        return splits
-
     @staticmethod
     def partition_sequences(sequences: List[str], n: int) -> List[List[str]]:
         sequences = sequences.copy()
@@ -92,36 +82,50 @@ class DensityDataModule(LightningDataModule):
         return list(itertools.chain.from_iterable(splits[:-2])), splits[-2], splits[-1]
 
     def setup(self, stage: Optional[str] = None):
-        splits = self.prepare_splits()
+        splits = []
+        for split_name in ['train_data', 'val_data', 'test_data']:
+            seq = []
+            for frame_path in Path(os.path.join(self._data_root, split_name, 'images')).iterdir():
+                match = re.match(r'img(\d{3})\d+\.jpg', frame_path.name)
+                if match is None:
+                    raise RuntimeError(f'Unknown file: {frame_path}')
+                seq.append(f'{split_name}/images/img{match.group(1)}')
 
-        train_split, valid_split, test_split = self.get_train_valid_test(splits, self._current_split)
+            splits.append(sorted(list(set(seq))))
+
+        if self._number_of_splits is not None and self._current_split is not None:
+            splits = [item for sublist in splits for item in sublist]
+            splits = self.partition_sequences(splits, self._number_of_splits)
+            train_split, valid_split, test_split = self.get_train_valid_test(splits, self._current_split)
+        else:
+            train_split, valid_split, test_split = splits
 
         self._train_dataset: Dataset = hydra.utils.instantiate({
-                '_target_': self._dataset,
-                'data_root': self._data_root,
-                'images_list': train_split,
-                'image_size': self._image_size,
-                'sigma': self._sigma,
-                'augmentations': self._augmentations if self._augment else self._transforms,
-            })
+            '_target_': self._dataset,
+            'data_root': self._data_root,
+            'images_list': train_split,
+            'image_size': self._image_size,
+            'sigma': self._sigma,
+            'augmentations': self._augmentations if self._augment else self._transforms,
+        })
 
         self._valid_dataset: Dataset = hydra.utils.instantiate({
-                '_target_': self._dataset,
-                'data_root': self._data_root,
-                'images_list': valid_split,
-                'image_size': self._image_size,
-                'sigma': self._sigma,
-                'augmentations': self._transforms,
-            })
+            '_target_': self._dataset,
+            'data_root': self._data_root,
+            'images_list': valid_split,
+            'image_size': self._image_size,
+            'sigma': self._sigma,
+            'augmentations': self._transforms,
+        })
 
         self._test_dataset: Dataset = hydra.utils.instantiate({
-                '_target_': self._dataset,
-                'data_root': self._data_root,
-                'images_list': test_split,
-                'image_size': self._image_size,
-                'sigma': self._sigma,
-                'augmentations': self._transforms,
-            })
+            '_target_': self._dataset,
+            'data_root': self._data_root,
+            'images_list': test_split,
+            'image_size': self._image_size,
+            'sigma': self._sigma,
+            'augmentations': self._transforms,
+        })
 
     def train_dataloader(self):
         return DataLoader(

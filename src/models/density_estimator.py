@@ -46,7 +46,7 @@ class DensityEstimator(pl.LightningModule):
             encoder_weights="imagenet",
             in_channels=self._input_channels,
             classes=len(self._classes),
-            activation='softmax'
+            activation=None
         )
 
         if loss_function == 'MAE':
@@ -77,11 +77,11 @@ class DensityEstimator(pl.LightningModule):
         optimizer.zero_grad(set_to_none=True)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.network.forward(x)
+        return self.network(x)
 
     def training_step(self, batch: torch.Tensor, batch_idx: int) -> Optional[torch.Tensor]:
         x, y = batch
-        y_pred = self.forward(x)
+        y_pred = self.network(x)
         loss = self.loss(y_pred, y)
         if torch.isinf(loss):
             return None
@@ -94,7 +94,7 @@ class DensityEstimator(pl.LightningModule):
 
     def validation_step(self, batch: torch.Tensor, batch_idx: int) -> None:
         x, y = batch
-        y_pred = self.forward(x)
+        y_pred = self.network(x)
 
         loss = self.loss(y_pred, y)
 
@@ -104,7 +104,7 @@ class DensityEstimator(pl.LightningModule):
 
     def test_step(self, batch: torch.Tensor, batch_idx: int):
         x, y = batch
-        y_pred = self.forward(x)
+        y_pred = self.network(x)
 
         loss = self.loss(y_pred, y)
 

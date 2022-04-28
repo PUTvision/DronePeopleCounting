@@ -11,4 +11,4 @@ class CountingMAELoss(nn.Module):
         dim = tuple(range(1, tensor_dims))
 
         return torch.mean(torch.abs(
-            torch.sum(inputs, dim=dim) / 100 - torch.sum(targets, dim=dim) / 100))
+            torch.sum(inputs, dim=dim) / 400 - torch.sum(targets, dim=dim) / 400))
