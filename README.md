@@ -1,10 +1,10 @@
 # Pytorch Template Repository
 
 [//]: # (you have to change user and repository names)
-![main](https://github.com/PUTvision/PytorchTemplateRepository/actions/workflows/python-app.yml/badge.svg)
-[![GitHub contributors](https://img.shields.io/github/contributors/PUTvision/PytorchTemplateRepository)](https://github.com/PUTvision/PytorchTemplateRepository/graphs/contributors)
-[![GitHub stars](https://img.shields.io/github/stars/PUTvision/PytorchTemplateRepository)](https://github.com/PUTvision/PytorchTemplateRepository/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/PUTvision/PytorchTemplateRepository)](https://github.com/PUTvision/PytorchTemplateRepository/network/members)
+![main](https://github.com/PUTvision/DronePeopleCounting/actions/workflows/python-app.yml/badge.svg)
+[![GitHub contributors](https://img.shields.io/github/contributors/PUTvision/DronePeopleCounting)](https://github.com/PUTvision/DronePeopleCounting/graphs/contributors)
+[![GitHub stars](https://img.shields.io/github/stars/PUTvision/DronePeopleCounting)](https://github.com/PUTvision/DronePeopleCounting/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/PUTvision/DronePeopleCounting)](https://github.com/PUTvision/DronePeopleCounting/network/members)
 
 ## **Overview**
 > Simple PyTorch repository for density/segmentation tasks with PyTorch Lightning, Hydra and Neptune included.
@@ -69,9 +69,3 @@ neptune-client==0.16.0
   ```commandline
   python run.py name=experiment_name eval_mode=True trainer.resume_from_checkpoint=./path/to/model export.export_to_onnx=True
   ```
-  
-## TODO
-- [ ] update readme
-- [ ] add density example
-- [ ] add tests
-- [ ] add visualization for test_step
