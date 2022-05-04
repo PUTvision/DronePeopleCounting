@@ -14,7 +14,7 @@ class CountingMAEMetric(Metric):
         tensor_dims = len(inputs.size())
         dim = tuple(range(1, tensor_dims))
 
-        self.sum += torch.sum(torch.abs(torch.sum(inputs, dim=dim) / 100 - torch.sum(targets, dim=dim) / 100))
+        self.sum += torch.sum(torch.abs(torch.sum(inputs, dim=dim) / 400 - torch.sum(targets, dim=dim) / 400))
         self.count += inputs.size(dim=0)
 
     def compute(self):
